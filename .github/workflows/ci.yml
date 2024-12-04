@@ -1,4 +1,4 @@
-name: "Flutter Ci"
+name: "Flutter CI"
 
 on:
   pull_request:
@@ -7,11 +7,11 @@ on:
 
 jobs:
   build_apk:
-    name: build flutter (android)
+    name: Build Flutter (Android)
     runs-on: ubuntu-latest
 
     steps:
-      - name: Clone repository
+      - name: Clone Repository
         uses: actions/checkout@v4
 
       - name: Set Up Java
@@ -20,17 +20,11 @@ jobs:
           distribution: 'oracle'
           java-version: '17'
 
-      - name: Set up Flutter
+      - name: Set Up Flutter
         uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.19.3'
           channel: 'stable'
-
-        env:
-          KEY_JKS: ${{ secrets.RELEASE_KEYSTORE }}
-          SIGNING_KEY_ALIAS: ${{ secrets.ALIAS }}
-          SIGNING_KEY_PASSWORD: ${{ secrets.ALIAS_PASSWORD }}
-          SIGNING_STORE_PASSWORD: ${{ secrets.KEY_PASSWORD }}
 
       - name: Decode Keystore
         run: |
@@ -43,47 +37,45 @@ jobs:
           echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> android/key.properties
           echo "storeFile=keystore.jks" >> android/key.properties
 
-      - name: Get dependencies
+      - name: Get Dependencies
         run: flutter pub get
 
       - name: Build APK
         run: flutter build apk
 
-      - name: Build App bundle
+      - name: Build App Bundle
         run: flutter build appbundle
 
       - uses: actions/upload-artifact@v4.4.3
         with:
           name: release-apk
           path: build/app/outputs/apk/release/app-release.apk
+
   beta_apk:
-      name: Upload Android Beta to Firebase App Distribution
-      needs: [build_apk]
-      runs-on: ubuntu-latest
-      steps:
-        - name: checkout to repository
-          uses: actions/checkout@v4
+    name: Upload Android Beta to Firebase App Distribution
+    needs: [ build_apk ]
+    runs-on: ubuntu-latest
 
-        - name: set up java
-          uses: actions/setup-java4.5.0
-          with:
-            distribution: 'oracle'
-            java-version: '17'
-        - name: Download Artifact
-          uses: actions/download-artifact@master
-          with:
-            name: release-apk
-        - name: Upload APK
-          uses: wzieba/Firebase-Distribution-Github-Action@v1.7.0
-          with:
-            appId: ${{secrets.FIREBASE_ANDROID_APPID}}
-            token: ${{secrets.FIREBASE_TOKEN}}
-            group: testers
-            file: app-release.apk
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
 
+    - name: Set Up Java
+      uses: actions/setup-java@v4.5.0
+      with:
+          distribution: 'oracle'
+          java-version: '17'
 
+    - name: Download APK Artifact
+      uses: actions/download-artifact@v3
+      with:
+        name: release-apk
 
-
-
-
+    - name: Upload APK to Firebase App Distribution
+      uses: wzieba/Firebase-Distribution-Github-Action@v1.7.0
+      with:
+        appId: ${{ secrets.FIREBASE_ANDROID_APPID }}
+        token: ${{ secrets.FIREBASE_TOKEN }}
+        group: testers
+        file: app-release.apk
 
