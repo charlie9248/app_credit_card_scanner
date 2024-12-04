@@ -7,16 +7,17 @@ plugins {
 
 def localProperties = new Properties()
 def localPropertiesFile = rootProject.file("local.properties")
-def keystorePropertiesFile = rootProject.file('key.properties')
 if (localPropertiesFile.exists()) {
     localPropertiesFile.withReader("UTF-8") { reader ->
         localProperties.load(reader)
     }
 }
 
-if (keystorePropertiesFile.exists()) {
-    keystoreProperties.load(new     FileInputStream(keystorePropertiesFile))
-}
+//def keystoreProperties = new Properties()
+//def keystorePropertiesFile = rootProject.file('key.properties')
+//if (keystorePropertiesFile.exists()) {
+//    keystoreProperties.load(new     FileInputStream(keystorePropertiesFile))
+//}
 
 def flutterVersionCode = localProperties.getProperty("flutter.versionCode")
 if (flutterVersionCode == null) {
